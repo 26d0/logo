@@ -156,35 +156,40 @@
 </script>
 
 <main>
-  <h1 class="dosis-logo">VRSNS風ロゴジェネレーター</h1>
+  <div class="flex flex-col items-center justify-center gap-8">
+    <div>
+      <p class="text-2xl md:text-5xl text-center font-semibold">VRSNS風ロゴジェネレーター</p>
+    </div>
+    <div class="flex flex-col md:flex-row gap-2 md:gap-6 md:max-w-lg w-full">
+      <input 
+        type="text" 
+        bind:value={text1} 
+        placeholder="VR"
+        class="bg-color-0 mt-1 px-3 py-2 border shadow-sm border-color-1 focus:outline-none focus:border-color-1 focus:ring-color-1 w-full block rounded-md sm:text-sm focus:ring-1"
+      >
+      <input 
+        type="text" 
+        bind:value={text2} 
+        placeholder="CHAT"
+        class="bg-color-0 mt-1 px-3 py-2 border shadow-sm border-color-1 focus:outline-none focus:border-color-1 focus:ring-color-1 w-full block rounded-md sm:text-sm focus:ring-1"
+      >
+    </div>
+    <div class="md:w-auto ">
+      {#if !fontLoaded}
+      <div class="loading">フォントを読み込み中...</div>
+      {/if}
   
-  <div class="input-group">
-    <input 
-      type="text" 
-      bind:value={text1} 
-      placeholder="VR"
-      class="dosis-logo"
-    >
-    <input 
-      type="text" 
-      bind:value={text2} 
-      placeholder="CHAT"
-      class="dosis-logo"
-    >
+      <canvas 
+        bind:this={canvas} 
+        on:click={downloadImage}
+        title="クリックしてダウンロード"
+        class:hidden={!fontLoaded}
+        class="max-w-lg w-full md:w-auto rounded-lg"
+      >
+      </canvas>
+    </div>
+    <p class="text-sm md:text-xl">↑<br>キャンバスをクリックするとPNG画像をダウンロードできます</p>
   </div>
-  
-  {#if !fontLoaded}
-    <div class="loading">フォントを読み込み中...</div>
-  {/if}
-  
-  <canvas 
-    bind:this={canvas} 
-    on:click={downloadImage}
-    title="クリックしてダウンロード"
-    class:hidden={!fontLoaded}
-  ></canvas>
-
-  <p class="dosis-logo">↑ キャンバスをクリックするとPNG画像をダウンロードできます</p>
 </main>
 
 <style>
@@ -195,65 +200,11 @@
     padding: 0;
   }
 
-  :global(.dosis-logo) {
+  :global(body) {
     font-family: "Dosis", "M PLUS Rounded 1c", sans-serif;
     font-optical-sizing: auto;
     font-weight: 700;
     font-style: normal;
     color: #a9b1d6;
-  }
-
-  main {
-    text-align: center;
-    padding: 20px;
-  }
-
-  .input-group {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    margin: 20px 0;
-  }
-
-  input {
-    padding: 10px;
-    font-size: 16px;
-    width: 140px;
-    border: 2px solid #a9b1d6;
-    border-radius: 5px;
-    background-color: #1a1b26;
-    color: #a9b1d6;
-  }
-
-  input::placeholder {
-    color: #565f89;
-  }
-
-  canvas {
-    max-width: 100%;
-    height: auto;
-    margin: 20px auto;
-    display: block;
-    border: 1px solid #a9b1d6;
-    cursor: pointer;
-  }
-
-  canvas:hover {
-    border-color: #fff;
-  }
-
-  p {
-    color: #a9b1d6;
-    font-size: 14px;
-  }
-
-  .loading {
-    color: #a9b1d6;
-    margin: 20px 0;
-    font-size: 16px;
-  }
-
-  .hidden {
-    display: none;
   }
 </style>
