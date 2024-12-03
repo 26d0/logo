@@ -32,3 +32,6 @@ npm run build
 
 ## Contributing
 Pull requests and issue reports are welcome.
+
+
+Not associated with any VRSNSes.
