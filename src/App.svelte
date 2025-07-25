@@ -1,25 +1,51 @@
 <svelte:head>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
   <link href="https://fonts.googleapis.com/css2?family=Dosis:wght@700&family=M+PLUS+Rounded+1c:wght@700&display=swap" rel="stylesheet">
   <title>Logo Generator</title>
   <link rel="shortcut icon" href="/favicon.ico">
 </svelte:head>
 
-<script>
+<script lang="ts">
   import { onMount } from 'svelte';
-  let text1 = 'VR';
-  let text2 = 'CHAT';
-  let canvas;
-  let ctx;
+  
+  // Get initial values from URL query parameters with smart defaults
+  const getQueryParam = (name: string, defaultValue: string): string => 
+    typeof window !== 'undefined' 
+      ? new URLSearchParams(window.location.search).get(name) || defaultValue 
+      : defaultValue;
+  
+  let text1 = getQueryParam('text1', 'VR');
+  let text2 = getQueryParam('text2', 'CHAT');
+  let canvas: HTMLCanvasElement;
+  let ctx: CanvasRenderingContext2D | null;
   let fontLoaded = false;
+  let copyFeedback = '';
 
   // detect use of webkit
-  function isWebKit() {
-    return navigator.vendor && navigator.vendor.includes('Apple');
+  function isWebKit(): boolean {
+    return navigator.vendor ? navigator.vendor.includes('Apple') : false;
+  }
+
+  // Clean URL parameters to remove text1 and text2
+  function cleanUrlParameters(): void {
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      const hasText1 = url.searchParams.has('text1');
+      const hasText2 = url.searchParams.has('text2');
+      
+      if (hasText1 || hasText2) {
+        url.searchParams.delete('text1');
+        url.searchParams.delete('text2');
+        window.history.replaceState({}, document.title, url.toString());
+      }
+    }
   }
 
   onMount(async () => {
+    // Clean URL parameters if they exist
+    cleanUrlParameters();
+    
     // フォントの読み込みを待つ
     await document.fonts.ready;
     // 両方のフォントが読み込まれるのを確認
@@ -33,7 +59,7 @@
     generateLogo(false);
   });
 
-  function generateLogo(forExport = false) {
+  function generateLogo(forExport: boolean = false): void {
     if (!ctx || !fontLoaded) return;
 
     ctx.font = '700 92px "Dosis", "M PLUS Rounded 1c", sans-serif';
@@ -143,13 +169,62 @@
     
   }
 
-  function downloadImage() {
+  function downloadImage(): void {
     generateLogo(true);
     const link = document.createElement('a');
-    link.download = 'vrchat-logo.png';
+    
+    // Generate dynamic filename based on text inputs
+    const sanitizeText = (text: string): string => text.replace(/[^a-zA-Z0-9\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/g, '').slice(0, 20);
+    const fileName1 = text1 ? sanitizeText(text1) : 'text1';
+    const fileName2 = text2 ? sanitizeText(text2) : 'text2';
+    
+    link.download = `${fileName1}_${fileName2}.png`;
     link.href = canvas.toDataURL('image/png', 1.0);
     link.click();
     generateLogo(false);
+  }
+
+  function shareUrl(): void {
+    const url = new URL(window.location.href);
+    url.searchParams.set('text1', text1);
+    url.searchParams.set('text2', text2);
+    
+    // Check if Web Share API is available
+    if (navigator.share) {
+      navigator.share({
+        title: 'VRSNS風ロゴジェネレーター',
+        text: `"${text1}" と "${text2}" のロゴを作ったよ！`,
+        url: url.toString()
+      }).then(() => {
+        copyFeedback = 'シェアしました！';
+        setTimeout(() => {
+          copyFeedback = '';
+        }, 2000);
+      }).catch(err => {
+        // Fallback to clipboard copy if share is cancelled or fails
+        if (err.name !== 'AbortError') {
+          fallbackCopyUrl(url.toString());
+        }
+      });
+    } else {
+      // Fallback to clipboard copy for browsers without Web Share API
+      fallbackCopyUrl(url.toString());
+    }
+  }
+
+  function fallbackCopyUrl(url: string): void {
+    navigator.clipboard.writeText(url).then(() => {
+      copyFeedback = 'URLをコピーしました！';
+      setTimeout(() => {
+        copyFeedback = '';
+      }, 2000);
+    }).catch(err => {
+      console.error('Failed to copy URL: ', err);
+      copyFeedback = 'シェアに失敗しました';
+      setTimeout(() => {
+        copyFeedback = '';
+      }, 2000);
+    });
   }
 
   $: if (ctx && fontLoaded && (text1 || text2)) generateLogo(false);
@@ -181,14 +256,37 @@
   
       <canvas 
         bind:this={canvas} 
-        on:click={downloadImage}
-        title="クリックしてダウンロード"
         class:hidden={!fontLoaded}
         class="max-w-lg w-full md:w-auto rounded-lg"
       >
       </canvas>
     </div>
-    <p class="text-sm md:text-xl">↑<br>キャンバスをクリックするとPNG画像をダウンロードできます</p>
+    <div class="flex flex-col items-center gap-2">
+      <div class="flex gap-2">
+        <button 
+          on:click={downloadImage}
+          class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center gap-2"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 16L7 11L8.4 9.55L11 12.15V4H13V12.15L15.6 9.55L17 11L12 16Z" fill="currentColor"/>
+            <path d="M5 20V18H19V20H5Z" fill="currentColor"/>
+          </svg>
+          画像をダウンロード
+        </button>
+        <button 
+          on:click={shareUrl}
+          class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center gap-2"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 16.08C17.24 16.08 16.56 16.38 16.04 16.85L8.91 12.7C8.96 12.47 9 12.24 9 12S8.96 11.53 8.91 11.3L15.96 7.19C16.5 7.69 17.21 8 18 8C19.66 8 21 6.66 21 5S19.66 2 18 2 15 3.34 15 5C15 5.24 15.04 5.47 15.09 5.7L8.04 9.81C7.5 9.31 6.79 9 6 9C4.34 9 3 10.34 3 12S4.34 15 6 15C6.79 15 7.5 14.69 8.04 14.19L15.16 18.34C15.11 18.55 15.08 18.77 15.08 19C15.08 20.61 16.39 21.92 18 21.92S20.92 20.61 20.92 19C20.92 17.39 19.61 16.08 18 16.08Z" fill="currentColor"/>
+          </svg>
+          リンクをシェア
+        </button>
+      </div>
+      {#if copyFeedback}
+        <p class="text-sm text-green-400 animate-pulse">{copyFeedback}</p>
+      {/if}
+    </div>
   </div>
 </main>
 
