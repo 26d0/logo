@@ -197,7 +197,7 @@
     if (navigator.share) {
       navigator.share({
         title: 'VRSNS風ロゴジェネレーター',
-        text : `"${text1}" と "${text2}" のロゴを作ったよ！`,
+        text : `${text1} ${text2}のロゴを作ったよ！`,
         url  : url.toString()
       }).then(() => shareDone('シェアしました！'))
         .catch(e => e.name !== 'AbortError' && fallback());
