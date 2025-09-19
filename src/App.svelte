@@ -222,7 +222,7 @@
 </svelte:head>
 
 <main class="flex flex-col items-center justify-center gap-8">
-  <p class="text-2xl md:text-5xl text-center font-semibold">VRSNS風ロゴジェネレーター</p>
+  <p class="text-2xl md:text-5xl text-center font-semibold main-title">VRSNS風ロゴジェネレーター</p>
 
   <div class="flex flex-col md:flex-row gap-2 md:gap-6 md:max-w-lg w-full">
     <input bind:value={text1} placeholder="VR"   class="input" />
@@ -233,7 +233,7 @@
     {#if !fontReady}
       <div class="loading">フォントを読み込み中...</div>
     {/if}
-    <canvas bind:this={canvas} class="max-w-lg w-full md:w-auto rounded-lg" class:hidden={!fontReady}/>
+    <canvas bind:this={canvas} class="max-w-lg w-full md:w-auto rounded-lg" class:hidden={!fontReady}></canvas>
   </div>
 
   <div class="flex flex-col items-center gap-2">
@@ -242,7 +242,7 @@
       <button class="btn blue"  on:click={shareUrl}>リンクをシェア</button>
     </div>
     {#if copyFeedback}
-      <p class="text-sm text-green-400 animate-pulse">{copyFeedback}</p>
+      <p class="feedback-text">{copyFeedback}</p>
     {/if}
   </div>
 </main>
@@ -250,15 +250,71 @@
 <style>
   :global(body) {
     margin: 0;
-    background:#1a1b26;
-    color:#a9b1d6;
     font-family: "Dosis", "M PLUS Rounded 1c", sans-serif;
-    font-weight:700;
+    font-weight: 700;
   }
-  .input{
-    @apply bg-color-0 mt-1 px-3 py-2 border shadow-sm border-color-1 focus:outline-none focus:border-color-1 focus:ring-color-1 w-full block rounded-md sm:text-sm focus:ring-1;
+  .input {
+    background-color: white;
+    margin-top: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    border-radius: 0.375rem;
+    width: 100%;
+    display: block;
+    font-size: 0.875rem;
+    color: #111827;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
   }
-  .btn{ @apply px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 text-white hover:brightness-110 transition-colors;}
-  .green{ background:#16a34a;}
-  .blue { background:#2563eb;}
+  .input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 1px #3b82f6;
+  }
+  @media (prefers-color-scheme: dark) {
+    .input {
+      background-color: #374151;
+      border-color: #4b5563;
+      color: #f9fafb;
+    }
+    .input:focus {
+      border-color: #3b82f6;
+    }
+  }
+  .btn { 
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: white;
+    transition: filter 0.15s ease-in-out;
+    border: none;
+    cursor: pointer;
+  }
+  .btn:hover {
+    filter: brightness(1.1);
+  }
+  .green { background: #16a34a; }
+  .blue { background: #2563eb; }
+  .main-title {
+    color: #213547;
+  }
+  @media (prefers-color-scheme: dark) {
+    .main-title {
+      color: rgba(255, 255, 255, 0.87);
+    }
+  }
+  .feedback-text {
+    font-size: 0.875rem;
+    color: #059669;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  @media (prefers-color-scheme: dark) {
+    .feedback-text {
+      color: #34d399;
+    }
+  }
 </style>
